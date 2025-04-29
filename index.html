@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurante Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #2c3e50;
+        }
+
+        h1 {
+            text-align: center;
+            color: #E63946;
+            margin-bottom: 30px;
+        }
+
+        .login-container, .tab-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .login-container {
+            display: block;
+        }
+
+        .tab-container {
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #A7C957;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #FFD700;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .tab:hover {
+            background-color: #F77F00;
+        }
+
+        .tab.active {
+            background-color: #FFFFFF;
+            color: #E63946;
+            border-bottom: 2px solid #E63946;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #6F4E37;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        label, input, select, button {
+            margin: 8px 0;
+            display: block;
+            font-size: 14px;
+        }
+
+        input, select {
+            padding: 8px;
+            border: 1px solid #A7C957;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #E63946;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #F77F00;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+            background-color: #FFFFFF;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid #A7C957;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #FFD700;
+            color: #2c3e50;
+        }
+
+        p {
+            font-size: 14px;
+            color: #6F4E37;
+        }
+
+        .alert {
+            color: #FF4500;
+            font-weight: bold;
+        }
+
+        canvas {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+
+        .almacen-section {
+            background-color: #4682B4;
+            padding: 15px;
+            border-radius: 5px;
+            color: #FFFFFF;
+        }
+
+        .almacen-section h2 {
+            color: #FFFFFF;
+        }
+
+        .almacen-section input, .almacen-section select {
+            border: 1px solid #8FBC8F;
+        }
+    </style>
+</head>
+<body>
+    <h1>Restaurante Demo</h1>
+
+    <div class="login-container" id="loginContainer">
+        <div class="section">
+            <h2>Iniciar Sesión</h2>
+            <label>Email: <input type="text" id="loginEmail" placeholder="admin@restaurante.com o almacen@restaurante.com"></label>
+            <label>Contraseña: <input type="password" id="loginPassword" placeholder="admin123 o almacen123"></label>
+            <button onclick="iniciarSesion()">Iniciar Sesión</button>
+            <p id="loginResultado"></p>
+        </div>
+    </div>
+
+    <div class="tab-container" id="mainContainer">
+        <div class="tabs">
+            <button class="tab active general-tab" onclick="openTab('dashboard')">Dashboard</button>
+            <button class="tab general-tab" onclick="openTab('ventas')">Ventas</button>
+            <button class="tab general-tab" onclick="openTab('cierre')">Cierre de Caja</button>
+            <button class="tab general-tab" onclick="openTab('reporte')">Reporte</button>
+            <button class="tab general-tab" onclick="openTab('mejores-dias')">Mejores Días</button>
+            <button class="tab admin-only general-tab" style="display: none;" onclick="openTab('despachadores')">Despachadores</button>
+            <button class="tab admin-only general-tab" style="display: none;" onclick="openTab('empleados')">Empleados</button>
+            <button class="tab general-tab" onclick="openTab('pedidos')">Pedidos</button>
+            <button class="tab general-tab" onclick="openTab('ordenes')">Órdenes</button>
+            <button class="tab general-tab" onclick="openTab('gamificacion')">Gamificación</button>
+            <button class="tab almacen-tab" onclick="openTab('almacen')">Almacén</button>
+        </div>
+
+        <div id="dashboard" class="tab-content active">
+            <div class="section">
+                <h2>Dashboard</h2>
+                <button onclick="cargarDashboard()">Actualizar Dashboard</button>
+                <p>Total de ventas hoy: <span id="totalVentas">0</span></p>
+                <p>Inventario disponible (Pollo Rostizado): <span id="inventarioPollo">0</span></p>
+                <p id="stockAlerta"></p>
+            </div>
+        </div>
+
+        <div id="ventas" class="tab-content">
+            <div class="section">
+                <h2>Registrar Venta</h2>
+                <label>Usuario: <input type="text" id="ventaUsuario" value="Ana"></label>
+                <label>Turno: 
+                    <select id="ventaTurno">
+                        <option value="mañana">Mañana</option>
+                        <option value="tarde">Tarde</option>
+                        <option value="noche">Noche</option>
+                    </select>
+                </label>
+                <label>Producto: <input type="text" id="ventaProducto" value="Pollo Rostizado"></label>
+                <label>Cantidad: <input type="number" id="ventaCantidad" value="2"></label>
+                <label>Precio: <input type="number" id="ventaPrecio" value="100"></label>
+                <label>Pago: 
+                    <select id="ventaPago">
+                        <option value="efectivo">Efectivo</option>
+                        <option value="tarjeta">Tarjeta</option>
+                    </select>
+                </label>
+                <button onclick="registrarVenta()">Registrar Venta</button>
+                <p id="ventaResultado"></p>
+            </div>
+        </div>
+
+        <div id="cierre" class="tab-content">
+            <div class="section">
+                <h2>Cerrar Caja</h2>
+                <label>Usuario: <input type="text" id="cierreUsuario" value="Juan"></label>
+                <label>Turno: 
+                    <select id="cierreTurno">
+                        <option value="mañana">Mañana</option>
+                        <option value="tarde">Tarde</option>
+                        <option value="noche">Noche</option>
+                    </select>
+                </label>
+                <label>Efectivo: <input type="number" id="cierreEfectivo" value="200"></label>
+                <label>Tarjeta: <input type="number" id="cierreTarjeta" value="0"></label>
+                <label>Encargado: <input type="text" id="cierreEncargado" value="Juan"></label>
+                <button onclick="cerrarCaja()">Cerrar Caja</button>
+                <p id="cierreResultado"></p>
+            </div>
+        </div>
+
+        <div id="reporte" class="tab-content">
+            <div class="section">
+                <h2>Ver Reporte</h2>
+                <label>Turno: 
+                    <select id="reporteTurno">
+                        <option value="mañana">Mañana</option>
+                        <option value="tarde">Tarde</option>
+                        <option value="noche">Noche</option>
+                    </select>
+                </label>
+                <button onclick="verReporte()">Ver Reporte</button>
+                <table id="reporteTabla">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Usuario</th>
+                            <th>Turno</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reporteCuerpo"></tbody>
+                </table>
+                <h2>Gráfico de Ventas por Producto</h2>
+                <canvas id="ventasChart"></canvas>
+            </div>
+        </div>
+
+        <div id="mejores-dias" class="tab-content">
+            <div class="section">
+                <h2>Ver Mejores Días</h2>
+                <button onclick="verMejoresDias()">Ver Mejores Días</button>
+                <table id="mejoresDiasTabla">
+                    <thead>
+                        <tr>
+                            <th>Día</th>
+                            <th>Turno</th>
+                            <th>Ingresos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mejoresDiasCuerpo"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="despachadores" class="tab-content">
+            <div class="section">
+                <h2>Registrar Despachador</h2>
+                <label>Nombre: <input type="text" id="despachadorNombre" placeholder="Ej: Pedro"></label>
+                <label>Rol: 
+                    <select id="despachadorRol">
+                        <option value="encargado">Encargado</option>
+                        <option value="vendedor">Vendedor</option>
+                        <option value="inventario">Inventario</option>
+                    </select>
+                </label>
+                <button onclick="registrarDespachador()">Registrar Despachador</button>
+                <p id="despachadorResultado"></p>
+            </div>
+            <div class="section">
+                <h2>Ver Despachadores</h2>
+                <button onclick="verDespachadores()">Ver Despachadores</button>
+                <table id="despachadoresTabla">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Rol</th>
+                            <th>Sucursal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="despachadoresCuerpo"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="empleados" class="tab-content">
+            <div class="section">
+                <h2>Registrar Empleado</h2>
+                <label>Nombre: <input type="text" id="empleadoNombre" placeholder="Ej: María"></label>
+                <label>Rol: 
+                    <select id="empleadoRol">
+                        <option value="admin">Administrador</option>
+                        <option value="cajero">Cajero</option>
+                        <option value="gerente">Gerente</option>
+                    </select>
+                </label>
+                <label>Área: 
+                    <select id="empleadoArea">
+                        <option value="general">General</option>
+                        <option value="almacen">Almacén</option>
+                    </select>
+                </label>
+                <label>Email: <input type="text" id="empleadoEmail" placeholder="Ej: maria@restaurante.com"></label>
+                <label>Contraseña: <input type="password" id="empleadoPassword" placeholder="Contraseña"></label>
+                <button onclick="registrarEmpleado()">Registrar Empleado</button>
+                <p id="empleadoResultado"></p>
+            </div>
+            <div class="section">
+                <h2>Ver Empleados</h2>
+                <button onclick="verEmpleados()">Ver Empleados</button>
+                <table id="empleadosTabla">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Rol</th>
+                            <th>Área</th>
+                            <th>Sucursal</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="empleadosCuerpo"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="pedidos" class="tab-content">
+            <div class="section">
+                <h2>Registrar Pedido</h2>
+                <label>Usuario: <input type="text" id="pedidoUsuario" value="Ana"></label>
+                <label>Producto: <input type="text" id="pedidoProducto" value="Pollo Rostizado"></label>
+                <label>Cantidad: <input type="number" id="pedidoCantidad" value="1"></label>
+                <label>Mesa: <input type="text" id="pedidoMesa" value="Mesa 1"></label>
+                <button onclick="registrarPedido()">Registrar Pedido</button>
+                <p id="pedidoResultado"></p>
+            </div>
+        </div>
+
+        <div id="ordenes" class="tab-content">
+            <div class="section">
+                <h2>Pantalla de Órdenes</h2>
+                <button onclick="verOrdenes()">Actualizar Órdenes</button>
+                <table id="ordenesTabla">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Mesa</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordenesCuerpo"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="gamificacion" class="tab-content">
+            <div class="section">
+                <h2>Gamificación</h2>
+                <label>Empleado ID: <input type="number" id="gamificacionEmpleadoId" value="1"></label>
+                <label>Puntos: <input type="number" id="gamificacionPuntos" value="10"></label>
+                <button onclick="agregarPuntos()">Agregar Puntos</button>
+                <p id="gamificacionResultado"></p>
+            </div>
+            <div class="section">
+                <h2>Leaderboard (Top 3)</h2>
+                <button onclick="verLeaderboard()">Ver Leaderboard</button>
+                <table id="leaderboardTabla">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Puntos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardCuerpo"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="almacen" class="tab-content">
+            <div class="almacen-section">
+                <h2>Gestión de Inventario</h2>
+                <p>Inventario disponible (Pollo Rostizado): <span id="almacenInventarioPollo">0</span></p>
+                <p id="almacenStockAlerta" class="alert"></p>
+            </div>
+            <div class="almacen-section">
+                <h2>Registrar Inventario</h2>
+                <label>Producto: <input type="text" id="inventarioProducto" value="Pollo Rostizado"></label>
+                <label>Cantidad (kg): <input type="number" id="inventarioCantidad" value="10"></label>
+                <label>Fecha de Vencimiento (YYYY-MM-DD): <input type="text" id="inventarioFechaVencimiento" placeholder="2025-05-01"></label>
+                <label>Foto: <input type="file" id="inventarioFoto"></label>
+                <label>Checklist (Temperatura, Embalaje): <input type="text" id="inventarioChecklist" placeholder="Temperatura: 4°C, Embalaje: OK"></label>
+                <label>Firma del Responsable: <input type="text" id="inventarioFirma" placeholder="Nombre del Responsable"></label>
+                <button onclick="registrarInventario()">Registrar Inventario</button>
+                <p id="inventarioResultado"></p>
+            </div>
+            <div class="almacen-section">
+                <h2>Productos Próximos a Vencer</h2>
+                <button onclick="verVencimientos()">Ver Vencimientos</button>
+                <table id="vencimientosTabla">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Fecha de Vencimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vencimientosCuerpo"></tbody>
+                </table>
+            </div>
+            <div class="almacen-section">
+                <h2>Pedidos a Proveedores</h2>
+                <label>Proveedor: 
+                    <select id="almacenProveedor">
+                        <!-- Se llenará dinámicamente -->
+                    </select>
+                </label>
+                <label>Producto: <input type="text" id="almacenCompraProducto" value="Pollo"></label>
+                <label>Cantidad (kg): <input type="number" id="almacenCompraCantidad" value="50"></label>
+                <label>Precio: <input type="number" id="almacenCompraPrecio" value="100"></label>
+                <button onclick="registrarCompra()">Registrar Compra</button>
+                <button onclick="generarMensajeCompra()">Generar Mensaje</button>
+                <p id="almacenCompraResultado"></p>
+                <p id="almacenMensaje"></p>
+            </div>
+            <div class="almacen-section">
+                <h2>Historial de Compras</h2>
+                <button onclick="verCompras()">Ver Historial</button>
+                <table id="comprasTabla">
+                    <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comprasCuerpo"></tbody>
+                </table>
+            </div>
+            <div class="almacen-section">
+                <h2>Reporte de Merma</h2>
+                <button onclick="verMerma()">Ver Merma</button>
+                <table id="mermaTabla">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Merma (unidades)</th>
+                            <th>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mermaCuerpo"></tbody>
+                </table>
+            </div>
+            <div class="almacen-section">
+                <h2>Consumo por Temporada</h2>
+                <button onclick="verConsumoTemporada()">Ver Consumo</button>
+                <canvas id="consumoChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        function openTab(tabName) {
+            const contents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].classList.remove('active');
+            }
+
+            const tabs = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>

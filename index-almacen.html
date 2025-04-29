@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurante - Módulo de Almacén</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFFFFF;
+            color: #2c3e50;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4682B4;
+            margin-bottom: 30px;
+        }
+
+        .login-container, .almacen-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .login-container {
+            display: block;
+        }
+
+        .almacen-container {
+            display: none;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #4682B4;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        label, input, select, button {
+            margin: 8px 0;
+            display: block;
+            font-size: 14px;
+        }
+
+        input, select {
+            padding: 8px;
+            border: 1px solid #8FBC8F;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4682B4;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #355f8c;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+            background-color: #FFFFFF;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid #8FBC8F;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4682B4;
+            color: #FFFFFF;
+        }
+
+        p {
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .alert {
+            color: #FF4500;
+            font-weight: bold;
+        }
+
+        canvas {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+
+        .almacen-section {
+            background-color: #f0f7fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #4682B4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Restaurante - Módulo de Almacén</h1>
+
+    <div class="login-container" id="loginContainer">
+        <div class="section">
+            <h2>Iniciar Sesión</h2>
+            <label>Email: <input type="text" id="loginEmail" placeholder="almacen@restaurante.com"></label>
+            <label>Contraseña: <input type="password" id="loginPassword" placeholder="almacen123"></label>
+            <button onclick="iniciarSesion()">Iniciar Sesión</button>
+            <p id="loginResultado"></p>
+        </div>
+    </div>
+
+    <div class="almacen-container" id="almacenContainer">
+        <div class="almacen-section">
+            <h2>Gestión de Inventario</h2>
+            <p>Inventario disponible (Pollo Rostizado): <span id="almacenInventarioPollo">0</span></p>
+            <p id="almacenStockAlerta" class="alert"></p>
+        </div>
+        <div class="almacen-section">
+            <h2>Registrar Inventario</h2>
+            <label>Producto: <input type="text" id="inventarioProducto" value="Pollo Rostizado"></label>
+            <label>Cantidad (kg): <input type="number" id="inventarioCantidad" value="10"></label>
+            <label>Fecha de Vencimiento (YYYY-MM-DD): <input type="text" id="inventarioFechaVencimiento" placeholder="2025-05-01"></label>
+            <label>Foto: <input type="file" id="inventarioFoto"></label>
+            <label>Checklist (Temperatura, Embalaje): <input type="text" id="inventarioChecklist" placeholder="Temperatura: 4°C, Embalaje: OK"></label>
+            <label>Firma del Responsable: <input type="text" id="inventarioFirma" placeholder="Nombre del Responsable"></label>
+            <button onclick="registrarInventario()">Registrar Inventario</button>
+            <p id="inventarioResultado"></p>
+        </div>
+        <div class="almacen-section">
+            <h2>Productos Próximos a Vencer</h2>
+            <button onclick="verVencimientos()">Ver Vencimientos</button>
+            <table id="vencimientosTabla">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Fecha de Vencimiento</th>
+                    </tr>
+                </thead>
+                <tbody id="vencimientosCuerpo"></tbody>
+            </table>
+        </div>
+        <div class="almacen-section">
+            <h2>Pedidos a Proveedores</h2>
+            <label>Proveedor: 
+                <select id="almacenProveedor">
+                    <!-- Se llenará dinámicamente -->
+                </select>
+            </label>
+            <label>Producto: <input type="text" id="almacenCompraProducto" value="Pollo"></label>
+            <label>Cantidad (kg): <input type="number" id="almacenCompraCantidad" value="50"></label>
+            <label>Precio: <input type="number" id="almacenCompraPrecio" value="100"></label>
+            <button onclick="registrarCompra()">Registrar Compra</button>
+            <button onclick="generarMensajeCompra()">Generar Mensaje</button>
+            <p id="almacenCompraResultado"></p>
+            <p id="almacenMensaje"></p>
+        </div>
+        <div class="almacen-section">
+            <h2>Historial de Compras</h2>
+            <button onclick="verCompras()">Ver Historial</button>
+            <table id="comprasTabla">
+                <thead>
+                    <tr>
+                        <th>Proveedor</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody id="comprasCuerpo"></tbody>
+            </table>
+        </div>
+        <div class="almacen-section">
+            <h2>Reporte de Merma</h2>
+            <button onclick="verMerma()">Ver Merma</button>
+            <table id="mermaTabla">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Merma (unidades)</th>
+                        <th>Porcentaje</th>
+                    </tr>
+                </thead>
+                <tbody id="mermaCuerpo"></tbody>
+            </table>
+        </div>
+        <div class="almacen-section">
+            <h2>Consumo por Temporada</h2>
+            <button onclick="verConsumoTemporada()">Ver Consumo</button>
+            <canvas id="consumoChart"></canvas>
+        </div>
+    </div>
+
+    <script src="app-almacen.js"></script>
+</body>
+</html>
